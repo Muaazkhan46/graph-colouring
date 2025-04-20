@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Coloring Simulation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .description {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+            padding: 0 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        input, button, select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            font-size: 14px;
+        }
+
+        input {
+            width: 60px;
+            text-align: center;
+        }
+
+        select {
+            width: auto;
+        }
+
+        button {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            padding: 8px 12px;
+        }
+
+        button:hover {
+            background-color: #3182ce;
+        }
+
+        #graph-container {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            background-color: #f8fafc;
+            margin: 0 auto 15px auto;
+        }
+
+        .node {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            z-index: 2;
+        }
+
+        .edge {
+            position: absolute;
+            height: 2px;
+            background-color: #a0aec0;
+            transform-origin: 0 0;
+            z-index: 1;
+        }
+
+        .step-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .step-btn {
+            background-color: #4a5568;
+            padding: 8px 16px;
+        }
+        
+        #status {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            min-height: 22px;
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 300px;
+            margin: 15px auto;
+        }
+
+        .slider-container label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #d1d5db;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4299e1;
+            cursor: pointer;
+        }
+
+        .results {
+            margin: 15px 0;
+            padding: 12px;
+            background-color: #ebf8ff;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+            font-size: 14px;
+        }
+
+        .results h3 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .legend {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+                width: 95%;
+            }
+            
+            #graph-container {
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .description, .results p, .legend p {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Graph Coloring Simulation</h1>
+        <p class="description">This simulation demonstrates the backtracking algorithm for graph coloring. Adjust the parameters below to generate a graph and see how the algorithm colors it.</p>
+        
+        <div class="controls">
+            <input type="number" id="nodes-input" min="3" max="25" value="7" placeholder="Nodes">
+            <select id="graph-type">
+                <option value="random">Random Graph</option>
+                <option value="complete">Complete Graph</option>
+                <option value="cycle">Cycle Graph</option>
+                <option value="wheel">Wheel Graph</option>
+            </select>
+            <input type="number" id="edge-probability" min="10" max="100" value="40" placeholder="Edge %" step="10">
+            <button id="generate-btn">Generate Graph</button>
+        </div>
+        
+        <div id="graph-container"></div>
+        
+        <div class="step-controls">
+            <button id="color-btn" class="step-btn">Start Coloring</button>
+            <button id="reset-btn" class="step-btn">Reset Colors</button>
+        </div>
+        
+        <div id="status">Graph generated! Click "Start Coloring" to begin the algorithm.</div>
+        
+        <div class="slider-container">
+            <label for="speed-slider">Animation Speed:</label>
+            <input type="range" min="1" max="10" value="5" class="slider" id="speed-slider">
+        </div>
+        
+        <div class="results" id="results">
+            <h3>Coloring Results</h3>
+            <p>Click "Start Coloring" to run the algorithm.</p>
+        </div>
+        
+        <div class="legend">
+            <h3>About Graph Coloring</h3>
+            <p>Graph coloring is an assignment of colors to the vertices of a graph such that no two adjacent vertices share the same color. The algorithm uses backtracking to find a valid coloring with the minimum number of colors.</p>
+        </div>
+    </div>
+
+    <script>
+        // Constants and variables
+        const colors = [
+            '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', 
+            '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', 
+            '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', 
+            '#ec4899', '#f43f5e'
+        ];
+        
+        let graph = { nodes: [], edges: [], adjacencyList: [] };
+        let nodeSize = 36;
+        let animationSpeed = 5;
+        let coloringInProgress = false;
+        let currentStep = 0;
+        let coloringSteps = [];
+
+        // DOM Elements
+        const graphContainer = document.getElementById('graph-container');
+        const nodesInput = document.getElementById('nodes-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const colorBtn = document.getElementById('color-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const resultsDiv = document.getElementById('results');
+        const graphTypeSelect = document.getElementById('graph-type');
+        const edgeProbabilityInput = document.getElementById('edge-probability');
+        const speedSlider = document.getElementById('speed-slider');
+        const statusElement = document.getElementById('status');
+
+        // Event Listeners
+        generateBtn.addEventListener('click', generateGraph);
+        colorBtn.addEventListener('click', startColoring);
+        resetBtn.addEventListener('click', resetColors);
+        speedSlider.addEventListener('input', () => {
+            animationSpeed = parseInt(speedSlider.value);
+        });
+        
+        // Adjust size based on window size
+        function adjustNodeSize() {
+            const containerWidth = graphContainer.clientWidth;
+            if (containerWidth < 500) {
+                nodeSize = 28;
+            } else if (containerWidth < 700) {
+                nodeSize = 32;
+            } else {
+                nodeSize = 36;
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            if (graph.nodes.length > 0) {
+                // Redraw the graph with adjusted sizes
+                const oldNodes = [...graph.nodes];
+                const oldEdges = [...graph.edges];
+                graphContainer.innerHTML = '';
+                adjustNodeSize();
+                
+                // Recreate edge elements
+                for (const [i, j] of oldEdges) {
+                    const edge = createEdgeElement(oldNodes[i], oldNodes[j]);
+                    graphContainer.appendChild(edge);
+                }
+                
+                // Recreate node elements
+                for (const node of oldNodes) {
+                    const nodeElement = document.createElement('div');
+                    nodeElement.className = 'node';
+                    nodeElement.style.width = `${nodeSize}px`;
+                    nodeElement.style.height = `${nodeSize}px`;
+                    nodeElement.style.left = `${node.x}px`;
+                    nodeElement.style.top = `${node.y}px`;
+                    nodeElement.style.backgroundColor = node.color !== null ? colors[node.color] : '#64748b';
+                    nodeElement.textContent = node.id;
+                    nodeElement.dataset.id = node.id;
+                    
+                    graphContainer.appendChild(nodeElement);
+                }
+            }
+        });
+
+        // Helper Functions
+        function getRandomPosition(size) {
+            const padding = size + 10;
+            const maxX = graphContainer.clientWidth - padding * 2;
+            const maxY = graphContainer.clientHeight - padding * 2;
+            return {
+                x: padding + Math.floor(Math.random() * maxX),
+                y: padding + Math.floor(Math.random() * maxY)
+            };
+        }
+
+        function calculateCircularPosition(index, total, radius) {
+            const angle = (index / total) * 2 * Math.PI;
+            const centerX = graphContainer.clientWidth / 2;
+            const centerY = graphContainer.clientHeight / 2;
+            return {
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle)
+            };
+        }
+
+        function createEdgeElement(node1, node2) {
+            const dx = node2.x - node1.x;
+            const dy = node2.y - node1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+
+            const edge = document.createElement('div');
+            edge.className = 'edge';
+            edge.style.width = `${length}px`;
+            edge.style.left = `${node1.x + nodeSize / 2}px`;
+            edge.style.top = `${node1.y + nodeSize / 2}px`;
+            edge.style.transform = `rotate(${angle}rad)`;
+
+            return edge;
+        }
+
+        function generateGraph() {
+            // Clear previous graph
+            graphContainer.innerHTML = '';
+            graph = { nodes: [], edges: [], adjacencyList: [] };
+            coloringSteps = [];
+            currentStep = 0;
+            coloringInProgress = false;
+            
+            // Adjust node size based on container width
+            adjustNodeSize();
+            
+            // Get input values
+            const nodeCount = parseInt(nodesInput.value);
+            if (isNaN(nodeCount) || nodeCount < 3 || nodeCount > 25) {
+                alert('Please enter a valid number of nodes (3-25)');
+                return;
+            }
+            
+            const graphType = graphTypeSelect.value;
+            const edgeProbability = parseInt(edgeProbabilityInput.value) / 100;
+            
+            // Generate nodes
+            const radius = Math.min(graphContainer.clientWidth, graphContainer.clientHeight) / 2.5 - nodeSize;
+            for (let i = 0; i < nodeCount; i++) {
+                let position;
+                if (graphType === 'random') {
+                    position = getRandomPosition(nodeSize);
+                } else {
+                    position = calculateCircularPosition(i, nodeCount, radius);
+                }
+                
+                graph.nodes.push({
+                    id: i,
+                    x: position.x,
+                    y: position.y,
+                    color: null
+                });
+                
+                // Initialize adjacency list
+                graph.adjacencyList[i] = [];
+            }
+            
+            // Generate edges based on graph type
+            switch(graphType) {
+                case 'complete':
+                    for (let i = 0; i < nodeCount; i++) {
+                        for (let j = i + 1; j < nodeCount; j++) {
+                            graph.edges.push([i, j]);
+                            graph.adjacencyList[i].push(j);
+                            graph.adjacencyList[j].push(i);
+                        }
+                    }
+                    break;
+                    
+                case 'cycle':
+                    for (let i = 0; i < nodeCount; i++) {
+                        const j = (i + 1) % nodeCount;
+                        graph.edges.push([i, j]);
+                        graph.adjacencyList[i].push(j);
+                        graph.adjacencyList[j].push(i);
+                    }
+                    break;
+                    
+                case 'wheel':
+                    // Center node is the last one
+                    const center = nodeCount - 1;
+                    // Create cycle for outer nodes
+                    for (let i = 0; i < nodeCount - 1; i++) {
+                        const j = (i + 1) % (nodeCount - 1);
+                        graph.edges.push([i, j]);
+                        graph.adjacencyList[i].push(j);
+                        graph.adjacencyList[j].push(i);
+                        
+                        // Connect center to all other nodes
+                        graph.edges.push([i, center]);
+                        graph.adjacencyList[i].push(center);
+                        graph.adjacencyList[center].push(i);
+                    }
+                    break;
+                    
+                case 'random':
+                default:
+                    for (let i = 0; i < nodeCount; i++) {
+                        for (let j = i + 1; j < nodeCount; j++) {
+                            if (Math.random() < edgeProbability) {
+                                graph.edges.push([i, j]);
+                                graph.adjacencyList[i].push(j);
+                                graph.adjacencyList[j].push(i);
+                            }
+                        }
+                    }
+                    break;
+            }
+            
+            // Create edge elements
+            for (const [i, j] of graph.edges) {
+                const edge = createEdgeElement(graph.nodes[i], graph.nodes[j]);
+                graphContainer.appendChild(edge);
+            }
+            
+            // Create node elements
+            for (const node of graph.nodes) {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.style.width = `${nodeSize}px`;
+                nodeElement.style.height = `${nodeSize}px`;
+                nodeElement.style.left = `${node.x}px`;
+                nodeElement.style.top = `${node.y}px`;
+                nodeElement.style.backgroundColor = '#64748b';
+                nodeElement.textContent = node.id;
+                nodeElement.dataset.id = node.id;
+                
+                graphContainer.appendChild(nodeElement);
+            }
+            
+            statusElement.textContent = 'Graph generated! Click "Start Coloring" to begin the algorithm.';
+            resultsDiv.innerHTML = '<h3>Coloring Results</h3><p>Click "Start Coloring" to run the algorithm.</p>';
+        }
+
+        function isSafe(nodeId, color) {
+            // Check if any adjacent node has the same color
+            for (const adjNode of graph.adjacencyList[nodeId]) {
+                if (graph.nodes[adjNode].color === color) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function graphColoringBacktrack() {
+            const numNodes = graph.nodes.length;
+            const colorsUsed = new Set();
+            coloringSteps = [];
+            
+            // Reset colors
+            for (const node of graph.nodes) {
+                node.color = null;
+            }
+            
+            function recordStep(nodeId, color, success) {
+                coloringSteps.push({
+                    nodeId,
+                    color,
+                    success
+                });
+            }
+            
+            function backtrack(nodeId) {
+                // Base case: all nodes are colored
+                if (nodeId === numNodes) {
+                    return true;
+                }
+                
+                // Try different colors for this node
+                for (let colorIndex = 0; colorIndex < colors.length; colorIndex++) {
+                    if (isSafe(nodeId, colorIndex)) {
+                        // Assign color
+                        graph.nodes[nodeId].color = colorIndex;
+                        colorsUsed.add(colorIndex);
+                        
+                        // Record successful color assignment
+                        recordStep(nodeId, colorIndex, true);
+                        
+                        // Recur to color rest of the graph
+                        if (backtrack(nodeId + 1)) {
+                            return true;
+                        }
+                        
+                        // If coloring with this color didn't work, backtrack
+                        graph.nodes[nodeId].color = null;
+                        recordStep(nodeId, colorIndex, false);
+                    }
+                }
+                
+                return false;
+            }
+            
+            // Start backtracking from the first node
+            const result = backtrack(0);
+            
+            return {
+                success: result,
+                numColors: colorsUsed.size,
+                colorsUsed: Array.from(colorsUsed)
+            };
+        }
+
+        function startColoring() {
+            if (coloringInProgress) return;
+            if (graph.nodes.length === 0) {
+                alert('Please generate a graph first!');
+                return;
+            }
+            
+            coloringInProgress = true;
+            colorBtn.disabled = true;
+            generateBtn.disabled = true;
+            
+            // Run the backtracking algorithm
+            const coloringResult = graphColoringBacktrack();
+            currentStep = 0;
+            
+            statusElement.textContent = 'Coloring in progress...';
+            
+            // Animate the steps
+            animateColoring();
+        }
+
+        function animateColoring() {
+            if (currentStep >= coloringSteps.length) {
+                finishColoring();
+                return;
+            }
+            
+            const step = coloringSteps[currentStep];
+            const nodeElement = document.querySelector(`.node[data-id="${step.nodeId}"]`);
+            
+            if (step.success) {
+                nodeElement.style.backgroundColor = colors[step.color];
+                statusElement.textContent = `Assigned color ${step.color + 1} to node ${step.nodeId}`;
+            } else {
+                nodeElement.style.backgroundColor = '#64748b';
+                statusElement.textContent = `Backtracking: Color ${step.color + 1} doesn't work for node ${step.nodeId}`;
+            }
+            
+            currentStep++;
+            setTimeout(animateColoring, 1000 / animationSpeed);
+        }
+
+        function finishColoring() {
+            coloringInProgress = false;
+            colorBtn.disabled = false;
+            generateBtn.disabled = false;
+            
+            // Show final coloring
+            for (let i = 0; i < graph.nodes.length; i++) {
+                const nodeElement = document.querySelector(`.node[data-id="${i}"]`);
+                nodeElement.style.backgroundColor = colors[graph.nodes[i].color];
+            }
+            
+            // Collect unique colors used
+            const uniqueColors = new Set();
+            for (const node of graph.nodes) {
+                if (node.color !== null) {
+                    uniqueColors.add(node.color);
+                }
+            }
+            
+            // Display results
+            const colorCount = uniqueColors.size;
+            statusElement.textContent = `Coloring complete! Used ${colorCount} colors.`;
+            
+            let resultsHTML = `
+                <h3>Coloring Results</h3>
+                <p>The graph was successfully colored using <strong>${colorCount} colors</strong>.</p>
+                <p>Each node is assigned a color such that no adjacent nodes share the same color.</p>
+                <div class="color-palette">
+            `;
+            
+            // Add color swatches
+            Array.from(uniqueColors).sort((a, b) => a - b).forEach(colorIndex => {
+                resultsHTML += `<div class="color-swatch" style="background-color: ${colors[colorIndex]}" title="Color ${colorIndex + 1}"></div>`;
+            });
+            
+            resultsHTML += `</div>`;
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+        function resetColors() {
+            if (coloringInProgress) return;
+            if (graph.nodes.length === 0) return;
+            
+            // Reset all nodes to default color
+            for (const node of graph.nodes) {
+                node.color = null;
+            }
+            
+            const nodeElements = document.querySelectorAll('.node');
+            nodeElements.forEach(node => {
+                node.style.backgroundColor = '#64748b';
+            });
+            
+            coloringSteps = [];
+            currentStep = 0;
+            statusElement.textContent = 'Colors reset. Ready for coloring.';
+            resultsDiv.innerHTML = '<h3>Coloring Results</h3><p>Click "Start Coloring" to run the algorithm.</p>';
+        }
+
+        // Initialize with default graph on load
+        window.addEventListener('load', () => {
+            setTimeout(generateGraph, 500);
+        });
+    </script>
+</body>
+</html>
